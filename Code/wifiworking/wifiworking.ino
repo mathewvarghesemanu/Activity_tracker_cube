@@ -3,6 +3,8 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
+// #include <HTTPClient.h>
+
 
 ESP8266WiFiMulti WiFiMulti;
 char user[]="Mathew";
@@ -30,12 +32,10 @@ void get_activity_list(){
   This is used to get the list of activities that user will configure using the mobile app. The user can choose 4 activities at once. 
   Corresponding to the four activities the user can choose, we have four modes depending upon the four sides of the cube.
   */
-
   if ((WiFiMulti.run() == WL_CONNECTED)) {
     WiFiClient client;
     HTTPClient http;
     StaticJsonDocument<192> doc;
-
 
     // Serial.print("[HTTP] begin...\n");
     http.begin(client, get_activity_api_url);
@@ -46,7 +46,7 @@ void get_activity_list(){
       Serial.printf("[HTTP] GET... code: %d\n", httpCode);
       if (httpCode == HTTP_CODE_OK) {
         String payload = http.getString();
-        // Serial.println(payload);    
+        Serial.println(payload);    
         DeserializationError error = deserializeJson(doc, payload);
 
         if (error) {
@@ -54,14 +54,11 @@ void get_activity_list(){
           Serial.println(error.f_str());
           return;
         }
-
         JsonArray activities = doc["activities"];
         const char* activities_0 = activities[0]; // "swimming"
         const char* activities_1 = activities[1]; // "sleeping"
         const char* activities_2 = activities[2]; // "dancing"
         const char* activities_3 = activities[3]; // "learning"
-
-
       http.end();
       Serial.println(activities_0);
       }   
@@ -78,7 +75,6 @@ void post_data(){
   The user is recognised by the first field of the data.
   */
   String json;
-  // StaticJsonDocument<128> doc;
   DynamicJsonDocument doc(2048);
   doc["user"] = "Mathew";
   doc["activity"] = "exercise";
@@ -87,40 +83,30 @@ void post_data(){
   doc["duration"] = "110";
 
   serializeJson(doc, json);
-  // Serial.println(json);
+  
+  // // Serial.println(json);
 
   if ((WiFiMulti.run() == WL_CONNECTED)) {
-    WiFiClient client;
-    HTTPClient http;
-
-
-    Serial.print("[HTTP] begin...\n");
-    // http.begin(client, get_activity_api_url);
-    http.addHeader("Content-Type", "application/json");
+    
+  
     Serial.println(json);
     // json="{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}";
     // Serial.println(json);
-    
+    WiFiClient client;
+    HTTPClient http;
+    Serial.print("[HTTP] begin...\n");
     http.begin(post_data_api_url);
+    http.addHeader("Content-Type", "application/json");
     int httpResponseCode =http.POST(json);
     if(httpResponseCode>0){
-
-      //  TODO: Rectify the error in the post request
-      // String response = http.getString();                       
-       
       Serial.println(httpResponseCode);   
-      // Serial.println(response);
-     
     }
     else {
-     
       Serial.printf("Error occurred while sending HTTP POST: %s\n");
-       
     }
     http.end();
   }
   delay(1000);
-  
 }
 
 void setup() {
@@ -135,5 +121,5 @@ void loop() {
   /*
   This is the main function
   */
-  post_data();
+  get_activity_list();
 }
