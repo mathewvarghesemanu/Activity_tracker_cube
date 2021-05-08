@@ -1,4 +1,3 @@
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
@@ -11,9 +10,9 @@ char get_activity_api_url[] = "http://activitytracker.mak3r.space/get_activities
 char post_data_api_url[]="http://activitytracker.mak3r.space/post_data";
 // char authkey[] = "401D82B1BD4B47D6817DBD5C8A6AD297";// find authkey in octoprint application keys in settings
 
-  char ssid[] = "manu";//your wifi
-  char password[] = "ambalathil1234"; //your password
-
+  char ssid[] = "man";//your wifi
+  char password[] = "dodododo"; //your password
+ 
 void setupWifi(){
   
   for (uint8_t t = 4; t > 0; t--) {
@@ -79,7 +78,8 @@ void post_data(){
   The user is recognised by the first field of the data.
   */
   String json;
-  StaticJsonDocument<128> doc;
+  // StaticJsonDocument<128> doc;
+  DynamicJsonDocument doc(2048);
   doc["user"] = "Mathew";
   doc["activity"] = "exercise";
   doc["starttime"] = "10:30";
@@ -95,18 +95,21 @@ void post_data(){
 
 
     Serial.print("[HTTP] begin...\n");
-    http.begin(client, get_activity_api_url);
+    // http.begin(client, get_activity_api_url);
     http.addHeader("Content-Type", "application/json");
+    Serial.println(json);
+    // json="{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}";
     // Serial.println(json);
+    
     http.begin(post_data_api_url);
     int httpResponseCode =http.POST(json);
     if(httpResponseCode>0){
 
       //  TODO: Rectify the error in the post request
-      String response = http.getString();                       
+      // String response = http.getString();                       
        
       Serial.println(httpResponseCode);   
-      Serial.println(response);
+      // Serial.println(response);
      
     }
     else {
@@ -114,9 +117,10 @@ void post_data(){
       Serial.printf("Error occurred while sending HTTP POST: %s\n");
        
     }
-
+    http.end();
   }
-  delay(300);
+  delay(1000);
+  
 }
 
 void setup() {
