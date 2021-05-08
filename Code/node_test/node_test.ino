@@ -6,16 +6,16 @@ const char* password = "quaintsocks941";
 
 void setup () {
  
-  Serial.begin(115200);
+  // Serial.begin(115200);
  
-  WiFi.begin(ssid, password);
+  // WiFi.begin(ssid, password);
  
-  while (WiFi.status() != WL_CONNECTED) {
+  // while (WiFi.status() != WL_CONNECTED) {
  
-    delay(1000);
-    Serial.print("Connecting..");
+  //   delay(1000);
+  //   Serial.print("Connecting..");
  
-  }
+  // }
  
 }
 

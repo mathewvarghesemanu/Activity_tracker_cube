@@ -14,8 +14,10 @@ activities=['playing','sleeping','studying','working']
 
 app=Flask(__name__)
 
-
-# TODO: endpoint for receiving data in the format : {"user":"Mathew","activity":"exercise","starttime":10:30,"endtime":12:20,"duration":110}
+@app.route("/")
+def test():
+    return 'Activity tracker API'
+# TODO: endpoint for receiving data in the format : {"user":"Mathew","activity":"exercise","starttime":"10:30","endtime":"12:20","duration":110}
 # arrange data as username->data->...
 @app.route("/post_data",methods =["POST"])
 def data_ingestion():
@@ -28,8 +30,13 @@ def data_ingestion():
 
 # TODO: endpoint for sending activities in the format : {
 # {"activities":["swimming","sleeping","dancing","learning"]}
+@app.route("/get_activities",methods=["GET"])
+def get_activities_helper():
+    return "Enter name in URL to get activities"
+
+
 @app.route("/get_activities/<string:person_name>",methods =["GET"])
-def get_activities():
+def get_activities(person_name):
     activity_list = []
     print(person_name)
     received_activities = db.collection("activity_data").document(person_name).get().to_dict()
@@ -48,4 +55,4 @@ def set_activities():
     return "Activities Saved to firestore"
 
 
-app.run(port=5000,  debug=True)
+# app.run(port=5000,  debug=True)

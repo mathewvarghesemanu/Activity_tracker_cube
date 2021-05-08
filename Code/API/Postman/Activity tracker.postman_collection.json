@@ -1,0 +1,91 @@
+{
+	"info": {
+		"_postman_id": "0b698be0-217d-4be2-a792-5ff693990d36",
+		"name": "Activity tracker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "post activity",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}"
+				},
+				"url": {
+					"raw": "http://activitytracker.mak3r.space/post_data/?",
+					"protocol": "http",
+					"host": [
+						"activitytracker",
+						"mak3r",
+						"space"
+					],
+					"path": [
+						"post_data",
+						""
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				},
+				"description": "        "
+			},
+			"response": []
+		},
+		{
+			"name": "get activities",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "post activities",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"user\":\"Mathew\",\"activities\":[\"swimming\",\"sleeping\",\"dancing\",\"learning\"]}"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/post_activities",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"post_activities"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
