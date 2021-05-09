@@ -3,10 +3,24 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
-
+#include <Wire.h>
+#include <math.h>
+#include "gyro.h"
 
 ESP8266WiFiMulti WiFiMulti;
+
 char user[]="Mathew";
+// char* user_activities[100]=["swimming","sleeping","dancing","learning"];
+struct user_activities_struct {
+  const char* activity_0;
+  const char* activity_1;
+  const char* activity_2;
+  const char* activity_3;
+};
+user_activities_struct user_activities;
+
+int cube_current_state=0;
+
 char get_activity_api_url[] = "http://activitytracker.mak3r.space/get_activities/Mathew";
 char post_data_api_url[]="http://activitytracker.mak3r.space/post_data";
 // char authkey[] = "401D82B1BD4B47D6817DBD5C8A6AD297";// find authkey in octoprint application keys in settings
@@ -53,13 +67,21 @@ void get_activity_list(){
           Serial.println(error.f_str());
           return;
         }
-        JsonArray activities = doc["activities"];
-        const char* activities_0 = activities[0]; // "swimming"
-        const char* activities_1 = activities[1]; // "sleeping"
-        const char* activities_2 = activities[2]; // "dancing"
-        const char* activities_3 = activities[3]; // "learning"
+        else{
+          JsonArray activities = doc["activities"];
+          user_activities.activity_0 = activities[0]; // "swimming"
+          user_activities.activity_1 = activities[1]; // "sleeping"
+          user_activities.activity_2 = activities[2]; // "dancing"
+          user_activities.activity_3 = activities[3]; // "learning"
+          Serial.println(user_activities.activity_0);
+          // strcpy(user_activities.activity_0,activities[0]);
+          // user_activities.activity_1=activities[1];
+          // user_activities.activity_2=activities[2];
+          // user_activities.activity_3=activities[3];
+          
+        }
       http.end();
-      Serial.println(activities_0);
+      
       }   
 
     delay(500);
@@ -108,12 +130,30 @@ void post_data(){
   delay(1000);
 }
 
+void find_activity(){
+  if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
+    cube_current_state=0;
+  }
+  else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch<-40){
+    cube_current_state=1;
+  }
+  else if (gyro_readings.roll>40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
+    cube_current_state=2;
+  }
+  else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>40) {
+    cube_current_state=0;
+  }
+  else if (gyro_readings.roll<-40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
+    cube_current_state=3;
+  }
+}
 void setup() {
   /*
   Initial setup
   */
   Serial.begin(115200);
   setupWifi(); 
+  initialize_gyro();
 }
 
 void loop() {
@@ -122,4 +162,10 @@ void loop() {
   */
   // get_activity_list();
   // Serial.print(no);
+  read_gyro();
+  Serial.print(gyro_readings.roll);
+  Serial.print("/");
+  Serial.println(gyro_readings.pitch);
+  find_activity();
+  Serial.println(cube_current_state);
 }
