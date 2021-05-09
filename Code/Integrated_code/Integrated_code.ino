@@ -10,8 +10,11 @@
 ESP8266WiFiMulti WiFiMulti;
 
 char user[]="Mathew";
-// char* user_activities[100]=["swimming","sleeping","dancing","learning"];
+
 struct user_activities_struct {
+  /*
+  Structure to store user activities Received from the get request
+  */
   const char* activity_0;
   const char* activity_1;
   const char* activity_2;
@@ -20,6 +23,9 @@ struct user_activities_struct {
 user_activities_struct user_activities;
 
 struct current_struct{
+  /*
+  Structure to store the current state of the activity tracker
+  */
   int cube_current_state;
   const char* current_activity;  
   bool no_activity;
@@ -34,7 +40,9 @@ char post_data_api_url[]="http://activitytracker.mak3r.space/post_data";
   char password[] = "quaintsocks941"; //your password
  
 void setupWifi(){
-  
+  /*
+  Function to initially set up Wi-Fi for connecting to Internet. It should be included in Setup function
+  */
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] WAIT %d...\n", t);
     Serial.flush();
@@ -103,6 +111,8 @@ void post_data(){
   if (current.no_activity==false){
     String json;
     DynamicJsonDocument doc(2048);
+    //TODO: assign The respective values to the variables
+    //TODO: Figure out a way to send only when there is a state change
     doc["user"] = "Mathew";
     doc["activity"] = current.current_activity;
     doc["starttime"] = "10:30";
@@ -139,6 +149,9 @@ void post_data(){
 
 
 void map_activity(){
+  /*
+  Function to map the current state of the cube to the corresponding activities receeived from the get request
+  */
   switch(current.cube_current_state){
     case 0:
     current.no_activity=true;    
@@ -165,6 +178,9 @@ void map_activity(){
 
 
 void find_activity(){
+  /*
+  Function to find activity based on the gyro readings corresponding to the face of the cube
+  */
   if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
     current.cube_current_state=0;
   }

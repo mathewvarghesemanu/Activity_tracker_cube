@@ -2,6 +2,9 @@
 #include <math.h>
 
 struct gyro_readings_struct{
+  /*
+  Structure to store roll and pitch values to be used in other functions
+  */
   double roll;
   double pitch;
 };
@@ -41,6 +44,7 @@ void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
 }
 
 void MPU6050_Init(){
+
   delay(150);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
@@ -55,6 +59,9 @@ void MPU6050_Init(){
 }
 
 void initialize_gyro(){
+  /*
+  Function to initialise the gyro. To be called from inside the Setup function
+  */
   Wire.begin(sda, scl);
   MPU6050_Init();
 }
@@ -77,6 +84,9 @@ void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
 
 
 void read_gyro(){
+  /*
+  Function to read the gyro values and assignment to the global structure for gyro
+  */
   double Ax, Ay, Az, T, Gx, Gy, Gz;
   for (int i=0;i<100;i++){
     Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
