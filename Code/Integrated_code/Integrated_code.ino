@@ -19,7 +19,12 @@ struct user_activities_struct {
 };
 user_activities_struct user_activities;
 
-int cube_current_state=0;
+struct current_struct{
+  int cube_current_state;
+  const char* current_activity;  
+  bool no_activity;
+};
+current_struct current;
 
 char get_activity_api_url[] = "http://activitytracker.mak3r.space/get_activities/Mathew";
 char post_data_api_url[]="http://activitytracker.mak3r.space/post_data";
@@ -95,57 +100,87 @@ void post_data(){
   Past data function is used to send the data of the ongoing activity to the API. 
   The user is recognised by the first field of the data.
   */
-  String json;
-  DynamicJsonDocument doc(2048);
-  doc["user"] = "Mathew";
-  doc["activity"] = "exercise";
-  doc["starttime"] = "10:30";
-  doc["endtime"] = "12:20";
-  doc["duration"] = "110";
+  if (current.no_activity==false){
+    String json;
+    DynamicJsonDocument doc(2048);
+    doc["user"] = "Mathew";
+    doc["activity"] = current.current_activity;
+    doc["starttime"] = "10:30";
+    doc["endtime"] = "12:20";
+    doc["duration"] = "110";
 
-  serializeJson(doc, json);
-  
-  // // Serial.println(json);
-
-  if ((WiFiMulti.run() == WL_CONNECTED)) {
+    serializeJson(doc, json);
     
-  
-    Serial.println(json);
-    // json="{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}";
-    // Serial.println(json);
-    WiFiClient client;
-    HTTPClient http;
-    Serial.print("[HTTP] begin...\n");
-    http.begin(post_data_api_url);
-    http.addHeader("Content-Type", "application/json");
-    int httpResponseCode =http.POST(json);
-    if(httpResponseCode>0){
-      Serial.println(httpResponseCode);   
+    // // Serial.println(json);
+
+    if ((WiFiMulti.run() == WL_CONNECTED)) {
+      
+    
+      Serial.println(json);
+      // json="{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}";
+      // Serial.println(json);
+      WiFiClient client;
+      HTTPClient http;
+      Serial.print("[HTTP] begin...\n");
+      http.begin(post_data_api_url);
+      http.addHeader("Content-Type", "application/json");
+      int httpResponseCode =http.POST(json);
+      if(httpResponseCode>0){
+        Serial.println(httpResponseCode);   
+      }
+      else {
+        Serial.printf("Error occurred while sending HTTP POST: %s\n");
+      }
+      http.end();
     }
-    else {
-      Serial.printf("Error occurred while sending HTTP POST: %s\n");
-    }
-    http.end();
   }
   delay(1000);
 }
 
+
+void map_activity(){
+  switch(current.cube_current_state){
+    case 0:
+    current.no_activity=true;    
+    break;
+    case 1:
+    current.current_activity=user_activities.activity_0;
+    current.no_activity=false;
+    break;    
+    case 2:
+    current.current_activity=user_activities.activity_1;
+    current.no_activity=false;
+    break;
+    case 3:
+    current.current_activity=user_activities.activity_2;
+    current.no_activity=false;
+    break;
+    case 4:
+    current.current_activity=user_activities.activity_3;
+    current.no_activity=false;
+    break;
+  }
+}
+
+
+
 void find_activity(){
   if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    cube_current_state=0;
+    current.cube_current_state=0;
   }
   else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch<-40){
-    cube_current_state=1;
+    current.cube_current_state=1;
   }
   else if (gyro_readings.roll>40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    cube_current_state=2;
+    current.cube_current_state=2;
   }
   else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>40) {
-    cube_current_state=0;
+    current.cube_current_state=3;
   }
   else if (gyro_readings.roll<-40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    cube_current_state=3;
+    current.cube_current_state=4;
   }
+  map_activity();
 }
 void setup() {
   /*
@@ -167,5 +202,5 @@ void loop() {
   Serial.print("/");
   Serial.println(gyro_readings.pitch);
   find_activity();
-  Serial.println(cube_current_state);
+  Serial.println(current.cube_current_state);
 }
