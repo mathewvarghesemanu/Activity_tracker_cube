@@ -8,17 +8,15 @@ print(complete_path)
 cred = credentials.Certificate(complete_path)
 firebase_admin.initialize_app(cred)
 db=firestore.client()
-
-activities=['playing','sleeping','studying','working']
-
+activities=["work","study","exercise","read"]
 
 app=Flask(__name__)
 
 @app.route("/")
 def test():
     return 'Activity tracker API'
-# TODO: endpoint for receiving data in the format : {"user":"Mathew","activity":"exercise","starttime":"10:30","endtime":"12:20","duration":110}
-# arrange data as username->data->...
+'''endpoint for receiving data in the format : {"user":"Mathew","activity":"exercise","starttime":"10:30","endtime":"12:20","duration":110}
+ arrange data as username->data->...'''
 @app.route("/post_data",methods =["POST"])
 def data_ingestion():
     request_data=request.get_json()
@@ -28,8 +26,7 @@ def data_ingestion():
     return "Saved to firestore"
     
 
-# TODO: endpoint for sending activities in the format : {
-# {"activities":["swimming","sleeping","dancing","learning"]}
+'''endpoint for sending activities in the format : {"activities":["swimming","sleeping","dancing","learning"]}'''
 @app.route("/get_activities",methods=["GET"])
 def get_activities_helper():
     return "Enter name in URL to get activities"
@@ -43,8 +40,28 @@ def get_activities(person_name):
     print(received_activities)
     return received_activities
 
+#TODO : API to get the activity and corrresponding total time
+@app.route("/get_activities/<string:person_name>/aggregate_time",methods =["GET"])
+def get_aggregare_time(person_name):
+    activity_set = set(activities)
+    activity_duration= dict()
+    received_activities = db.collection("activity_data").document("Mathew").collection("data").get()
 
-# TODO: endpoint for sending activities in the format : {"user":"Mathew","activity":["swimming","sleeping","dancing","learning"]}
+    # for activity in received_activities:
+    #     activity_dict=activity.to_dict()
+    #     activity_set.add(activity_dict['activity'])
+    for distict_activity in activity_set:
+        activity_duration[distict_activity]=0
+    for activity in received_activities:
+        activity_dict=activity.to_dict()
+        for distict_activity in activity_set:
+            if activity_dict["activity"]==distict_activity:
+                activity_duration[distict_activity]=activity_duration[distict_activity]+activity_dict["duration"]
+    return(activity_duration)
+
+
+
+'''endpoint for sending activities in the format : {"user":"Mathew","activity":["swimming","sleeping","dancing","learning"]}'''
 # arrange data as username -> activities -> ...
 @app.route("/post_activities")
 def set_activities():
