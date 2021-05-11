@@ -56,15 +56,15 @@ void loop() {
   if (Ax!=0 &&Ay!=0 &&Az!=0)
   {
     roll = atan(Ay / sqrt(pow(Ax, 2) + pow(Az, 2))) * 180 / PI;
-  pitch = atan(-1 * Ax / sqrt(pow(Ay, 2) + pow(Az, 2))) * 180 / PI;
+    pitch = atan(-1 * Ax / sqrt(pow(Ay, 2) + pow(Az, 2))) * 180 / PI;
   
   // Low-pass filter
-  rollF = 0.94 * rollF + 0.06 * roll;
-  pitchF = 0.94 * pitchF + 0.06 * pitch;
+    rollF = 0.94 * rollF + 0.06 * roll;
+    pitchF = 0.94 * pitchF + 0.06 * pitch;
 
-  Serial.print(rollF);
-  Serial.print("/");
-  Serial.println(pitchF);
+    Serial.print(rollF);
+    Serial.print("/");
+    Serial.println(pitchF);
   }
   delay(400);
 }

@@ -6,10 +6,11 @@
 #include <Wire.h>
 #include <math.h>
 #include "gyro.h"
-
+#include "time_fetch.h"
+#include "constants.h"
 ESP8266WiFiMulti WiFiMulti;
 
-char user[]="Mathew";
+
 
 struct user_activities_struct {
   /*
@@ -26,18 +27,13 @@ struct current_struct{
   /*
   Structure to store the current state of the activity tracker
   */
-  int cube_current_state;
+  int cube_current_state=0;
   const char* current_activity;  
   bool no_activity;
 };
 current_struct current;
 
-char get_activity_api_url[] = "http://activitytracker.mak3r.space/get_activities/Mathew";
-char post_data_api_url[]="http://activitytracker.mak3r.space/post_data";
-// char authkey[] = "401D82B1BD4B47D6817DBD5C8A6AD297";// find authkey in octoprint application keys in settings
 
-  char ssid[] = "NETGEAR87";//your wifi
-  char password[] = "quaintsocks941"; //your password
  
 void setupWifi(){
   /*
@@ -100,6 +96,9 @@ void get_activity_list(){
     delay(500);
     }
   }
+  else{
+    Serial.println("Not Connected");
+  }
 }
 
 
@@ -112,12 +111,13 @@ void post_data(){
     String json;
     DynamicJsonDocument doc(2048);
     //TODO: assign The respective values to the variables
-    //TODO: Figure out a way to send only when there is a state change
-    doc["user"] = "Mathew";
+    doc["user"] = user;
     doc["activity"] = current.current_activity;
-    doc["starttime"] = "10:30";
-    doc["endtime"] = "12:20";
-    doc["duration"] = "110";
+    doc["starttime"] = start_time.formattedTime;
+    //TODO: Include start date
+    doc["endtime"] = end_time.formattedTime;
+    //TODO: Include end date
+    doc["duration"] = duration; 
 
     serializeJson(doc, json);
     
@@ -176,28 +176,48 @@ void map_activity(){
 }
 
 
+void get_activity_transition(int state){
+  /*
+  Function to get the transition from one activity to another and trigger required functions
+  */
+  if (current.cube_current_state!=state){
+      get_end_time();
+      // TODO: Send Previous activity, start time, endtime, duration as a post request
+      Serial.print("Transition: ");
+      Serial.println(current.cube_current_state);
+
+      Serial.println(current.current_activity);
+      post_data();      
+      current.cube_current_state=state;
+      get_start_time();
+    }
+}
 
 void find_activity(){
   /*
   Function to find activity based on the gyro readings corresponding to the face of the cube
+  This function also take care of the transition between activities
   */
   if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    current.cube_current_state=0;
+    get_activity_transition(0);
   }
   else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch<-40){
-    current.cube_current_state=1;
+    get_activity_transition(1);
   }
   else if (gyro_readings.roll>40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    current.cube_current_state=2;
+   get_activity_transition(2);
   }
   else if (gyro_readings.roll>-40 && gyro_readings.roll<40 && gyro_readings.pitch>40) {
-    current.cube_current_state=3;
+    get_activity_transition(3);
   }
   else if (gyro_readings.roll<-40 && gyro_readings.pitch>-40 && gyro_readings.pitch<40){
-    current.cube_current_state=4;
+    get_activity_transition(4);
   }
   map_activity();
 }
+
+
+
 void setup() {
   /*
   Initial setup
@@ -205,18 +225,32 @@ void setup() {
   Serial.begin(115200);
   setupWifi(); 
   initialize_gyro();
+  initialize_time();
+  get_start_time();
+  delay(3000);
+  get_activity_list();
+
 }
+
+
+
 
 void loop() {
   /*
   This is the main function
   */
   // get_activity_list();
-  // Serial.print(no);
+  // get_activity_list();
+
   read_gyro();
-  Serial.print(gyro_readings.roll);
-  Serial.print("/");
-  Serial.println(gyro_readings.pitch);
+  // Serial.print(gyro_readings.roll);
+  // Serial.print("/");
+  // Serial.println(gyro_readings.pitch);
   find_activity();
-  Serial.println(current.cube_current_state);
+  // Serial.println(current.cube_current_state);
+
+    
+  // Serial.println(duration);
+  // delay(2000);
+
 }
