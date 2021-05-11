@@ -10,16 +10,25 @@
 #include "constants.h"
 ESP8266WiFiMulti WiFiMulti;
 
-
+void my_strcpy2(char dest[], const char* src)
+{
+  int i=0;
+    while ('\0' != *src){
+        dest[i] = *src++;
+        i=i+1;
+    }
+    dest[i] = '\0';
+    
+}
 
 struct user_activities_struct {
   /*
   Structure to store user activities Received from the get request
   */
-  const char* activity_0;
-  const char* activity_1;
-  const char* activity_2;
-  const char* activity_3;
+  const char* activity_0="work";
+  const char* activity_1="study";
+  const char* activity_2="exercise";
+  const char* activity_3="read";
 };
 user_activities_struct user_activities;
 
@@ -28,7 +37,7 @@ struct current_struct{
   Structure to store the current state of the activity tracker
   */
   int cube_current_state=0;
-  const char* current_activity;  
+  char current_activity[20];  
   bool no_activity;
 };
 current_struct current;
@@ -78,11 +87,13 @@ void get_activity_list(){
         }
         else{
           JsonArray activities = doc["activities"];
-          user_activities.activity_0 = activities[0]; // "swimming"
-          user_activities.activity_1 = activities[1]; // "sleeping"
-          user_activities.activity_2 = activities[2]; // "dancing"
-          user_activities.activity_3 = activities[3]; // "learning"
-          Serial.println(user_activities.activity_0);
+
+          
+          // user_activities.activity_0 = activities[0]; // "swimming"
+          // user_activities.activity_1 = activities[1]; // "sleeping"
+          // user_activities.activity_2 = activities[2]; // "dancing"
+          // user_activities.activity_3 = activities[3]; // "learning"
+          // Serial.println(user_activities.activity_0);
           // strcpy(user_activities.activity_0,activities[0]);
           // user_activities.activity_1=activities[1];
           // user_activities.activity_2=activities[2];
@@ -155,21 +166,29 @@ void map_activity(){
   switch(current.cube_current_state){
     case 0:
     current.no_activity=true;    
+    my_strcpy2( current.current_activity,"None");
     break;
     case 1:
-    current.current_activity=user_activities.activity_0;
+    my_strcpy2( current.current_activity,user_activities.activity_0);
+    // current.current_activity=user_activities.activity_0;
     current.no_activity=false;
     break;    
     case 2:
-    current.current_activity=user_activities.activity_1;
+    my_strcpy2( current.current_activity,user_activities.activity_1);
+
+    // current.current_activity=user_activities.activity_1;
     current.no_activity=false;
     break;
     case 3:
-    current.current_activity=user_activities.activity_2;
+    my_strcpy2( current.current_activity,user_activities.activity_2);
+
+    // current.current_activity=user_activities.activity_2;
     current.no_activity=false;
     break;
     case 4:
-    current.current_activity=user_activities.activity_3;
+    my_strcpy2( current.current_activity,user_activities.activity_3);
+
+    // current.current_activity=user_activities.activity_3;
     current.no_activity=false;
     break;
   }
@@ -242,6 +261,7 @@ void loop() {
   // get_activity_list();
   // get_activity_list();
 
+// if (user_activities.activity_0!=""){
   read_gyro();
   // Serial.print(gyro_readings.roll);
   // Serial.print("/");
@@ -252,5 +272,7 @@ void loop() {
     
   // Serial.println(duration);
   // delay(2000);
-
+// }  
+Serial.println(current.current_activity);
+delay(1000);  
 }
