@@ -9,6 +9,7 @@
 #include "time_fetch.h"
 #include "constants.h"
 ESP8266WiFiMulti WiFiMulti;
+const int buzzer_pin=D5;
 
 void my_strcpy2(char dest[], const char* src)
 {
@@ -125,7 +126,7 @@ void post_data(){
     doc["user"] = user;
     doc["activity"] = current.current_activity;
     doc["starttime"] = start_time.formattedTime;
-    //TODO: Include start date
+    doc["startdate"] = start_time.currentDate;
     doc["endtime"] = end_time.formattedTime;
     //TODO: Include end date
     doc["duration"] = duration; 
@@ -199,7 +200,9 @@ void get_activity_transition(int state){
   /*
   Function to get the transition from one activity to another and trigger required functions
   */
+  
   if (current.cube_current_state!=state){
+      tone(buzzer_pin, 1500, 300); 
       get_end_time();
       // TODO: Send Previous activity, start time, endtime, duration as a post request
       Serial.print("Transition: ");
@@ -209,6 +212,7 @@ void get_activity_transition(int state){
       post_data();      
       current.cube_current_state=state;
       get_start_time();
+      
     }
 }
 
@@ -248,7 +252,8 @@ void setup() {
   get_start_time();
   delay(3000);
   get_activity_list();
-
+  pinMode(buzzer_pin,OUTPUT);
+  digitalWrite(buzzer_pin, LOW);
 }
 
 
@@ -274,5 +279,7 @@ void loop() {
   // delay(2000);
 // }  
 Serial.println(current.current_activity);
+Serial.println(gyro_readings.pitch);
+
 delay(1000);  
 }

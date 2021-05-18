@@ -57,6 +57,7 @@ def get_aggregare_time(person_name):
         for distict_activity in activity_set:
             if activity_dict["activity"]==distict_activity:
                 activity_duration[distict_activity]=activity_duration[distict_activity]+activity_dict["duration"]
+    
     return(activity_duration)
 
 
