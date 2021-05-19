@@ -2,6 +2,7 @@ from flask import Flask,request, jsonify
 import firebase_admin
 from firebase_admin import credentials,firestore
 import os
+import datetime
 cwd=os.getcwd()
 complete_path=os.path.join(cwd,"activity-tracker-cube-firebase-adminsdk-ugbiu-85cfbc3bbe.json")
 print(complete_path)
@@ -61,6 +62,26 @@ def get_aggregare_time(person_name):
     return(activity_duration)
 
 
+@app.route("/get_activities/<string:person_name>/aggregate_time_today",methods =["GET"])
+def get_aggregate_time_today(person_name):
+    activity_set = set(activities)
+    activity_duration= dict()
+    received_activities = db.collection("activity_data").document(person_name).collection("data").get()
+
+    # for activity in received_activities:
+    #     activity_dict=activity.to_dict()
+    #     activity_set.add(activity_dict['activity'])
+    date=str(datetime.datetime.now())[:10]
+    for distict_activity in activity_set:
+        activity_duration[distict_activity]=0
+    for activity in received_activities:
+        activity_dict=activity.to_dict()
+        for distict_activity in activity_set:
+            if activity_dict["activity"]==distict_activity and activity_dict["startdate"]==date:
+                activity_duration[distict_activity]=activity_duration[distict_activity]+activity_dict["duration"]
+    
+    return(activity_duration!=null?activity_duration:"")
+
 
 '''endpoint for sending activities in the format : {"user":"Mathew","activity":["swimming","sleeping","dancing","learning"]}'''
 # arrange data as username -> activities -> ...
@@ -74,3 +95,8 @@ def set_activities():
 
 
 # app.run(port=5000,  debug=True)
+
+@app.route("/Date")
+def get_date():
+    date=str(datetime.datetime.now())[:10]
+    return {"date":date}

@@ -59,6 +59,61 @@ void setupWifi(){
   Serial.printf("Wifi configured");
 }
 
+
+String set_date(){
+  char* dates;
+  if ((WiFiMulti.run() == WL_CONNECTED)) {
+    WiFiClient client;
+    HTTPClient http;
+
+    // Serial.print("[HTTP] begin...\n");
+    http.begin(client, get_date_api_url);
+    http.addHeader("Content-Type", "application/json");
+    // Serial.print("[HTTP] GET...\n");
+    StaticJsonDocument<192> doc;
+
+    int httpCode = http.GET();
+    if (httpCode > 0) {
+      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+      if (httpCode == HTTP_CODE_OK) {
+        String payload = http.getString();
+        Serial.println(payload);    
+        DeserializationError error = deserializeJson(doc, payload);
+
+        if (error) {
+          Serial.print(F("deserializeJson() failed: "));
+          Serial.println(error.f_str());
+          return "error";
+        }
+        else{
+          const char * date = doc["Date"];
+          my_strcpy2(dates,date);
+          
+          // user_activities.activity_0 = activities[0]; // "swimming"
+          // user_activities.activity_1 = activities[1]; // "sleeping"
+          // user_activities.activity_2 = activities[2]; // "dancing"
+          // user_activities.activity_3 = activities[3]; // "learning"
+          // Serial.println(user_activities.activity_0);
+          // strcpy(user_activities.activity_0,activities[0]);
+          // user_activities.activity_1=activities[1];
+          // user_activities.activity_2=activities[2];
+          // user_activities.activity_3=activities[3];
+          
+        }
+      http.end();
+      return dates;
+      
+      }   
+
+    delay(500);
+    }
+  }
+  else{
+    Serial.println("Not Connected");
+  }
+}
+
+
 void get_activity_list(){
   /*
   This is used to get the list of activities that user will configure using the mobile app. The user can choose 4 activities at once. 
@@ -67,12 +122,13 @@ void get_activity_list(){
   if ((WiFiMulti.run() == WL_CONNECTED)) {
     WiFiClient client;
     HTTPClient http;
-    StaticJsonDocument<192> doc;
 
     // Serial.print("[HTTP] begin...\n");
     http.begin(client, get_activity_api_url);
     http.addHeader("Content-Type", "application/json");
     // Serial.print("[HTTP] GET...\n");
+    StaticJsonDocument<192> doc;
+
     int httpCode = http.GET();
     if (httpCode > 0) {
       Serial.printf("[HTTP] GET... code: %d\n", httpCode);
@@ -144,7 +200,7 @@ void post_data(){
       WiFiClient client;
       HTTPClient http;
       Serial.print("[HTTP] begin...\n");
-      http.begin(post_data_api_url);
+      http.begin(client,post_data_api_url);
       http.addHeader("Content-Type", "application/json");
       int httpResponseCode =http.POST(json);
       if(httpResponseCode>0){
@@ -278,8 +334,9 @@ void loop() {
   // Serial.println(duration);
   // delay(2000);
 // }  
-Serial.println(current.current_activity);
-Serial.println(gyro_readings.pitch);
-
+get_start_time();
+// Serial.println(current.current_activity);
+// Serial.println(gyro_readings.pitch);
+// Serial.println(start_time.currentDate);
 delay(1000);  
 }

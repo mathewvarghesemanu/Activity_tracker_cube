@@ -3,9 +3,18 @@ import 'package:requests/requests.dart';
 import 'chart.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(MyApp());
+}
+
+String date_time() {
+  var now = new DateTime.now();
+  var formatter = new DateFormat('yyyy-MM-dd');
+  String formattedDate = formatter.format(now);
+  print(formattedDate); // 2016-01-25
+  return formattedDate;
 }
 
 class MyApp extends StatefulWidget {
@@ -56,8 +65,8 @@ class _MyAppState extends State<MyApp> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.network(
-              'https://i.ibb.co/dcMXGX1/v2-2021-May-06-04-20-36-AM-000-Customized-View24034031969.png',
+            Image.asset(
+              'Asset/cube.png',
               height: 200,
               width: 200,
             ),
