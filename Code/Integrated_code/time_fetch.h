@@ -1,8 +1,5 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
-
-// #include <ESP8266WiFiMulti.h>
-
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP,"pool.ntp.org");
 
@@ -98,10 +95,6 @@ void get_end_time(){
   // end_time.currentYear = ptm->tm_year+1900;
   end_time.formattedTime=timeClient.getFormattedTime();
   // end_time.currentDate=String(start_time.currentYear) + "-" + String(start_time.currentMonth) + "-" + String(start_time.monthDay);
-  end_time.currentDate=set_date();
+//  end_time.currentDate=set_date();
   get_duration();
 }
-
-
-
-
