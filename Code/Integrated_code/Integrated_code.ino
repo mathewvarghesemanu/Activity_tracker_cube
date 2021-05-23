@@ -9,29 +9,7 @@
 #include "constants.h"
 
 ESP8266WiFiMulti WiFiMulti;
-const int buzzer_pin = D5;
 
-
-struct user_activities_struct {
-  /*
-    Structure to store user activities Received from the get request
-  */
-  String activity_0 = "work";
-  String activity_1 = "study";
-  String activity_2 = "exercise";
-  String activity_3 = "read";
-};
-user_activities_struct user_activities;
-
-struct current_struct {
-  /*
-    Structure to store the current state of the activity tracker
-  */
-  int cube_current_state = 0;
-  String current_activity;
-  bool no_activity;
-};
-current_struct current;
 
 
 
@@ -51,7 +29,7 @@ void setupWifi() {
 
 
 String set_date() {
-//  char dates[20];
+  //  char dates[20];
   String dates_string;
   if ((WiFiMulti.run() == WL_CONNECTED)) {
     WiFiClient client;
@@ -65,10 +43,10 @@ String set_date() {
 
     int httpCode = http.GET();
     if (httpCode > 0) {
-      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+      Serial.printf("[HTTP] GET <date> code: %d\n", httpCode);
       if (httpCode == HTTP_CODE_OK) {
         String payload = http.getString();
-        Serial.println(payload);
+//        Serial.println(payload);
         DeserializationError error = deserializeJson(doc, payload);
 
         if (error) {
@@ -79,8 +57,8 @@ String set_date() {
         else {
           const char * date = doc["date"];
           //                      dates=doc["Date"].as<String>();
-                    Serial.println(date);
-           dates_string=String(date);
+          //                    Serial.println(date);
+          dates_string = String(date);
           //          my_strcpy2(dates, date);
           //          Serial.print(String(dates));
         }
@@ -116,7 +94,7 @@ void get_activity_list() {
 
     int httpCode = http.GET();
     if (httpCode > 0) {
-      Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+      Serial.printf("[HTTP] GET... <activity> code: %d\n", httpCode);
       if (httpCode == HTTP_CODE_OK) {
         String payload = http.getString();
         Serial.println(payload);
@@ -131,10 +109,10 @@ void get_activity_list() {
           JsonArray activities = doc["activities"];
 
 
-           user_activities.activity_0 = String(activities[0]); // "swimming"
-           user_activities.activity_1 = String(activities[1]); // "sleeping"
-           user_activities.activity_2 = String(activities[2]); // "dancing"
-           user_activities.activity_3 = String(activities[3]); // "learning"     
+          user_activities.activity_0 = String(activities[0]); // "swimming"
+          user_activities.activity_1 = String(activities[1]); // "sleeping"
+          user_activities.activity_2 = String(activities[2]); // "dancing"
+          user_activities.activity_3 = String(activities[3]); // "learning"
         }
         http.end();
       }
@@ -171,16 +149,17 @@ void post_data() {
     if ((WiFiMulti.run() == WL_CONNECTED)) {
 
 
-      Serial.println(json);
+      //      Serial.println(json);
       // json="{\"user\":\"Mathew\",\"activity\":\"exercise\",\"starttime\":\"10:30\",\"endtime\":\"12:20\",\"duration\":\"110\"}";
       // Serial.println(json);
       WiFiClient client;
       HTTPClient http;
-      Serial.print("[HTTP] begin...\n");
+      
       http.begin(client, post_data_api_url);
       http.addHeader("Content-Type", "application/json");
       int httpResponseCode = http.POST(json);
       if (httpResponseCode > 0) {
+        Serial.print("[HTTP] <post activity> code: ");
         Serial.println(httpResponseCode);
       }
       else {
@@ -193,43 +172,6 @@ void post_data() {
 }
 
 
-void map_activity() {
-  /*
-    Function to map the current state of the cube to the corresponding activities receeived from the get request
-  */
-  switch (current.cube_current_state) {
-    case 0:
-      current.no_activity = true;
-//      my_strcpy2( current.current_activity, "None");
-  current.current_activity="None";
-      break;
-    case 1:
-//      my_strcpy2( current.current_activity, user_activities.activity_0);
-       current.current_activity=user_activities.activity_0;
-      current.no_activity = false;
-      break;
-    case 2:
-//      my_strcpy2( current.current_activity, user_activities.activity_1);
-
-       current.current_activity=user_activities.activity_1;
-      current.no_activity = false;
-      break;
-    case 3:
-//      my_strcpy2( current.current_activity, user_activities.activity_2);
-
-       current.current_activity=user_activities.activity_2;
-      current.no_activity = false;
-      break;
-    case 4:
-//      my_strcpy2( current.current_activity, user_activities.activity_3);
-
-       current.current_activity=user_activities.activity_3;
-      current.no_activity = false;
-      break;
-  }
-}
-
-
 void get_activity_transition(int state) {
   /*
     Function to get the transition from one activity to another and trigger required functions
@@ -239,16 +181,56 @@ void get_activity_transition(int state) {
     tone(buzzer_pin, 1500, 300);
     get_end_time();
     // TODO: Send Previous activity, start time, endtime, duration as a post request
-    Serial.print("Transition: ");
-    Serial.println(current.cube_current_state);
+    Serial.println("***********************************");
+    Serial.print("Transition :");
+    Serial.print(current.cube_current_state);
+    Serial.print("-->");
+    Serial.println(state);
+    Serial.println("***********************************");
 
-    Serial.println(current.current_activity);
     post_data();
     current.cube_current_state = state;
     get_start_time();
 
   }
 }
+
+void map_activity() {
+  /*
+    Function to map the current state of the cube to the corresponding activities receeived from the get request
+  */
+  switch (current.cube_current_state) {
+    case 0:
+      current.no_activity = true;
+      //      my_strcpy2( current.current_activity, "None");
+      current.current_activity = "None";
+      break;
+    case 1:
+      //      my_strcpy2( current.current_activity, user_activities.activity_0);
+      current.current_activity = user_activities.activity_0;
+      current.no_activity = false;
+      break;
+    case 2:
+      //      my_strcpy2( current.current_activity, user_activities.activity_1);
+
+      current.current_activity = user_activities.activity_1;
+      current.no_activity = false;
+      break;
+    case 3:
+      //      my_strcpy2( current.current_activity, user_activities.activity_2);
+
+      current.current_activity = user_activities.activity_2;
+      current.no_activity = false;
+      break;
+    case 4:
+      //      my_strcpy2( current.current_activity, user_activities.activity_3);
+
+      current.current_activity = user_activities.activity_3;
+      current.no_activity = false;
+      break;
+  }
+}
+
 
 void find_activity() {
   /*
@@ -283,8 +265,8 @@ void setup() {
   setupWifi();
   initialize_gyro();
   initialize_time();
-  get_start_time();
   delay(3000);
+  get_start_time();
   get_activity_list();
   pinMode(buzzer_pin, OUTPUT);
   digitalWrite(buzzer_pin, LOW);
@@ -297,10 +279,6 @@ void loop() {
   /*
     This is the main function
   */
-  // get_activity_list();
-  // get_activity_list();
-
-  // if (user_activities.activity_0!=""){
   read_gyro();
   // Serial.print(gyro_readings.roll);
   // Serial.print("/");
@@ -312,10 +290,9 @@ void loop() {
   // Serial.println(duration);
   // delay(2000);
   // }
-  get_start_time();
+  //  get_start_time();
   // Serial.println(current.current_activity);
   // Serial.println(gyro_readings.pitch);
-  Serial.println(start_time.currentDate);
   delay(1000);
-
+  Serial.println(current.current_activity);
 }
