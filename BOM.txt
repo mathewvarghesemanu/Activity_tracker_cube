@@ -1,4 +1,0 @@
-NodeMCU x 1
-18650 x 1
-MPU6050 x 1
-Stickers x 4
